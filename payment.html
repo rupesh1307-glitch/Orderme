@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Payment Gateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    /* Interactive Card Mockup */
+    .card-preview {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px rgba(30, 60, 114, 0.4);
+      position: relative;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-chip {
+      width: 40px;
+      height: 28px;
+      background: #fcd34d;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .card-number-display {
+      font-size: 1.25rem;
+      letter-spacing: 2px;
+      font-family: monospace;
+      margin: 10px 0;
+    }
+    .card-meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    .upi-timer {
+      font-weight: 700;
+      color: #ef4444;
+      font-size: 1.1rem;
+      margin-top: 6px;
+    }
+    .payment-badge-pill {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Managed by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main class="payment-page">
+    <div class="payment-box">
+      <div class="payment-badge-pill" id="orderBadge">Order Loading...</div>
+      <h1>Choose Payment Method</h1>
+
+      <form id="paymentForm" class="payment-form">
+        <!-- 1. Card Option -->
+        <label class="payment-option">
+          <input type="radio" name="payMethod" value="card" checked>
+          <span>💳 Credit / Debit Card</span>
+        </label>
+
+        <div class="payment-details" id="cardDetails">
+          <!-- Visual card -->
+          <div class="card-preview">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="card-chip"></div>
+              <span style="font-weight:700;letter-spacing:1px;">VISA / MASTERCARD</span>
+            </div>
+            <div class="card-number-display" id="cardNumPreview">•••• •••• •••• ••••</div>
+            <div class="card-meta-row">
+              <div>
+                <div style="font-size:0.65rem;color:#93c5fd;">CARDHOLDER</div>
+                <div id="cardHolderPreview">YOUR NAME</div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem;color:#93c5fd;">EXPIRES</div>
+                <div id="cardExpiryPreview">MM/YY</div>
+              </div>
+            </div>
+          </div>
+
+          <input type="text" id="cardNumberInput" placeholder="Card Number (16 digits)" maxlength="19" required value="4532 8901 2345 6789">
+          <input type="text" id="cardHolderInput" placeholder="Name on Card" required value="Rupesh Kumar">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <input type="text" id="cardExpiryInput" placeholder="MM/YY" maxlength="5" required value="12/28">
+            <input type="password" id="cardCvvInput" placeholder="CVV" maxlength="3" required value="888">
+          </div>
+        </div>
+
+        <!-- 2. UPI Option -->
+        <label class="payment-option">
+          <input type="radio" name="payMethod" value="upi">
+          <span>⚡ Instant UPI / QR Code</span>
+        </label>
+
+        <div class="payment-details" id="upiDetails" style="display:none;text-align:center;">
+          <p style="font-size:0.9rem;color:#475569;margin-bottom:10px;">Scan QR with Google Pay, PhonePe, Paytm, or BHIM</p>
+          <div class="upi-qr-wrap">
+            <img
+              src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/refs/heads/main/WhatsApp%20Image%202026-06-08%20at%2010.19.11%20PM.jpeg"
+              alt="UPI QR Code"
+              class="upi-qr"
+            >
+            <div class="upi-timer" id="upiCountdown">Expires in: 02:00</div>
+          </div>
+          <button type="button" id="simulateUpiBtn" class="secondary-btn" style="width:100%;margin-top:6px;">
+            📲 Simulate App Scan &amp; Approve
+          </button>
+        </div>
+
+        <!-- 3. COD Option -->
+        <label class="payment-option">
+          <input type="radio" name="payMethod" value="cod">
+          <span>📦 Cash on Delivery (COD)</span>
+        </label>
+        <div class="payment-details" id="codDetails" style="display:none;">
+          <p style="font-size:0.9rem;color:#475569;">
+            Pay with cash or UPI directly to our delivery agent upon receiving your package.
+          </p>
+        </div>
+      </form>
+
+      <div class="checkout-actions" style="margin-top:2rem;">
+        <button id="payDoneBtn" class="primary-btn" style="width:100%;justify-content:center;padding:1rem;font-size:1.1rem;">
+          Pay ₹0 Now &rarr;
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    const orderNumber = urlParams.get('orderNumber');
+
+    let currentOrder = null;
+    let upiTimerInterval = null;
+
+    async function loadOrderInfo() {
+      if (!orderId && !orderNumber) {
+        Toast.error('No order reference found.');
+        return;
+      }
+
+      try {
+        const res = await API.getOrderById(orderId || orderNumber);
+        currentOrder = res.data;
+
+        document.getElementById('orderBadge').textContent = `Order #${currentOrder.order_number} • Total: ₹${currentOrder.total_amount.toLocaleString('en-IN')}`;
+        document.getElementById('payDoneBtn').textContent = `Pay ₹${currentOrder.total_amount.toLocaleString('en-IN')} Now →`;
+
+        if (currentOrder.payment_status === 'Completed') {
+          Toast.info('Payment is already completed for this order.');
+          setTimeout(() => {
+            window.location.href = `trackorder.html?orderId=${currentOrder.id}`;
+          }, 1000);
+        }
+      } catch (err) {
+        console.error(err);
+        Toast.error('Failed to load order details');
+      }
+    }
+
+    // Toggle payment method sections
+    const cardDetails = document.getElementById('cardDetails');
+    const upiDetails = document.getElementById('upiDetails');
+    const codDetails = document.getElementById('codDetails');
+
+    document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const method = document.querySelector('input[name="payMethod"]:checked').value;
+        cardDetails.style.display = method === 'card' ? 'flex' : 'none';
+        upiDetails.style.display = method === 'upi' ? 'flex' : 'none';
+        codDetails.style.display = method === 'cod' ? 'flex' : 'none';
+
+        if (method === 'upi') {
+          startUpiTimer();
+        } else {
+          clearInterval(upiTimerInterval);
+        }
+
+        if (method === 'cod') {
+          document.getElementById('payDoneBtn').textContent = 'Confirm Order with COD →';
+        } else if (currentOrder) {
+          document.getElementById('payDoneBtn').textContent = `Pay ₹${currentOrder.total_amount.toLocaleString('en-IN')} Now →`;
+        }
+      });
+    });
+
+    // Card Live Preview Listeners
+    const cardNumInput = document.getElementById('cardNumberInput');
+    const cardHolderInput = document.getElementById('cardHolderInput');
+    const cardExpiryInput = document.getElementById('cardExpiryInput');
+
+    cardNumInput.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '').slice(0, 16);
+      val = val.replace(/(\d{4})/g, '$1 ').trim();
+      e.target.value = val;
+      document.getElementById('cardNumPreview').textContent = val || '•••• •••• •••• ••••';
+    });
+
+    cardHolderInput.addEventListener('input', (e) => {
+      document.getElementById('cardHolderPreview').textContent = e.target.value.toUpperCase() || 'YOUR NAME';
+    });
+
+    cardExpiryInput.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '').slice(0, 4);
+      if (val.length >= 2) val = val.slice(0, 2) + '/' + val.slice(2);
+      e.target.value = val;
+      document.getElementById('cardExpiryPreview').textContent = val || 'MM/YY';
+    });
+
+    function startUpiTimer() {
+      let seconds = 120;
+      clearInterval(upiTimerInterval);
+      upiTimerInterval = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(upiTimerInterval);
+          document.getElementById('upiCountdown').textContent = 'QR Code Expired. Please refresh.';
+        } else {
+          const m = Math.floor(seconds / 60);
+          const s = seconds % 60;
+          document.getElementById('upiCountdown').textContent = `Expires in: 0${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+      }, 1000);
+    }
+
+    // Simulate UPI Button
+    document.getElementById('simulateUpiBtn').addEventListener('click', async () => {
+      if (!currentOrder) return;
+      try {
+        const btn = document.getElementById('simulateUpiBtn');
+        btn.disabled = true;
+        btn.textContent = 'Verifying UPI Approval...';
+
+        const res = await API.verifyUPI(currentOrder.id);
+        Toast.success('UPI Payment Approved & Verified! 🎉');
+
+        setTimeout(() => {
+          window.location.href = `trackorder.html?orderId=${currentOrder.id}`;
+        }, 800);
+      } catch (err) {
+        Toast.error(err.message || 'UPI verification failed');
+      }
+    });
+
+    // Pay Done Button Handler
+    document.getElementById('payDoneBtn').addEventListener('click', async () => {
+      if (!currentOrder) {
+        Toast.error('No order selected.');
+        return;
+      }
+
+      const method = document.querySelector('input[name="payMethod"]:checked').value;
+      const btn = document.getElementById('payDoneBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing Payment...';
+
+      try {
+        let paymentDetails = {};
+        if (method === 'card') {
+          paymentDetails = {
+            cardNumber: cardNumInput.value,
+            holder: cardHolderInput.value,
+            expiry: cardExpiryInput.value
+          };
+        }
+
+        const res = await API.processPayment({
+          orderId: currentOrder.id,
+          orderNumber: currentOrder.order_number,
+          paymentMethod: method,
+          paymentDetails
+        });
+
+        Toast.success('Payment completed successfully! 🎉');
+
+        setTimeout(() => {
+          window.location.href = `trackorder.html?orderId=${currentOrder.id}`;
+        }, 800);
+      } catch (err) {
+        console.error(err);
+        Toast.error(err.message || 'Payment processing failed');
+        btn.disabled = false;
+        btn.textContent = `Pay Now →`;
+      }
+    });
+
+    loadOrderInfo();
+  </script>
+</body>
+</html>

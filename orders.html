@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - My Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: white;
+      color: #475569;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background: #f1f5f9;
+    }
+    .filter-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .order-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .order-item-row img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+    .order-actions-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 1rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Handled by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main class="orders-page">
+    <div class="orders-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+        <h1 style="margin-bottom:0;">My Order History</h1>
+        <button onclick="window.location.href='home.html'" class="secondary-btn" style="padding:6px 14px;font-size:0.85rem;">
+          + Shop More
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="orders-filters">
+        <button class="filter-btn active" data-filter="all">All Orders</button>
+        <button class="filter-btn" data-filter="active">In Transit / Active</button>
+        <button class="filter-btn" data-filter="delivered">Delivered</button>
+        <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+      </div>
+
+      <div id="ordersContainer">
+        <div style="text-align:center;padding:40px;color:#64748b;">Loading your orders...</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let allOrders = [];
+    let currentFilter = 'all';
+
+    function getStatusClass(status) {
+      switch (status) {
+        case 'Placed': return 'status-placed';
+        case 'Confirmed': return 'status-confirmed';
+        case 'Shipped': return 'status-shipped';
+        case 'Out for Delivery': return 'status-out-for-delivery';
+        case 'Delivered': return 'status-delivered';
+        case 'Cancelled': return 'status-cancelled';
+        default: return 'status-placed';
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    async function loadOrders() {
+      const container = document.getElementById('ordersContainer');
+      if (!API.isLoggedIn()) {
+        container.innerHTML = `
+          <div class="empty-orders">
+            <span style="font-size:3rem;display:block;margin-bottom:10px;">🔒</span>
+            <h3>Please log in to view your orders</h3>
+            <p style="margin-top:6px;margin-bottom:16px;">Sign in with your OrderMe account to view your purchase history.</p>
+            <a href="login.html" class="primary-btn" style="display:inline-block;text-decoration:none;">Log In &rarr;</a>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const res = await API.getUserOrders();
+        allOrders = res.data || [];
+        renderOrders();
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="color:#ef4444;text-align:center;">Failed to load orders: ${err.message}</p>`;
+      }
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('ordersContainer');
+
+      let filtered = allOrders;
+      if (currentFilter === 'active') {
+        filtered = allOrders.filter(o => ['Placed', 'Confirmed', 'Shipped', 'Out for Delivery'].includes(o.status));
+      } else if (currentFilter === 'delivered') {
+        filtered = allOrders.filter(o => o.status === 'Delivered');
+      } else if (currentFilter === 'cancelled') {
+        filtered = allOrders.filter(o => o.status === 'Cancelled');
+      }
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="empty-orders">
+            <span style="font-size:3rem;display:block;margin-bottom:10px;">📦</span>
+            <h3>No orders found in this tab</h3>
+            <p style="margin-top:6px;margin-bottom:16px;">You haven't placed any matching orders yet.</p>
+            <a href="home.html" class="primary-btn" style="display:inline-block;text-decoration:none;">Explore Products &rarr;</a>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(order => {
+        const items = order.items || [];
+        const canCancel = ['Placed', 'Confirmed'].includes(order.status);
+
+        html += `
+          <div class="order-box">
+            <div class="order-header">
+              <div>
+                <span class="order-id">Order #${order.order_number}</span>
+                <span style="font-size:0.8rem;color:#64748b;margin-left:8px;">${formatDate(order.created_at)}</span>
+              </div>
+              <span class="order-status ${getStatusClass(order.status)}">${order.status}</span>
+            </div>
+
+            <div class="order-customer">
+              <strong>Delivery To:</strong> ${order.customer_name} • 📞 ${order.customer_phone}<br>
+              <span style="color:#64748b;">${order.shipping_address}, ${order.shipping_city} - ${order.shipping_pincode}</span>
+            </div>
+
+            <div style="margin-bottom:8px;font-weight:600;font-size:0.9rem;color:#334155;">Ordered Items (${items.length}):</div>
+            <div style="margin-bottom:1rem;">
+              ${items.map(i => `
+                <div class="order-item-row">
+                  ${i.image ? `<img src="${i.image}" alt="${i.product_title}">` : ''}
+                  <div style="flex:1;">
+                    <div style="font-weight:600;font-size:0.9rem;color:#0f172a;">${i.product_title}</div>
+                    <div style="font-size:0.8rem;color:#64748b;">Qty: ${i.quantity} &times; ₹${i.price.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style="font-weight:600;font-size:0.95rem;">
+                    ₹${(i.subtotal || i.price * i.quantity).toLocaleString('en-IN')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:8px;">
+              <div>
+                <span style="font-size:0.85rem;color:#64748b;">Payment:</span>
+                <span style="font-size:0.85rem;font-weight:600;text-transform:uppercase;color:#0f172a;">${order.payment_method} (${order.payment_status})</span>
+              </div>
+              <div>
+                <span style="font-size:0.9rem;color:#64748b;">Total Paid:</span>
+                <span style="font-size:1.2rem;font-weight:700;color:#0f172a;margin-left:6px;">₹${order.total_amount.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            <div class="order-actions-bar">
+              ${canCancel ? `
+                <button class="secondary-btn" style="color:#ef4444;border-color:#fecaca;" onclick="handleCancelOrder(${order.id})">
+                  Cancel Order
+                </button>
+              ` : ''}
+              <button class="primary-btn" style="padding:6px 16px;font-size:0.85rem;" onclick="window.location.href='trackorder.html?orderId=${order.id}'">
+                🚚 Track Package Live &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function handleCancelOrder(orderId) {
+      if (confirm('Are you sure you want to cancel this order? Stock will be refunded.')) {
+        try {
+          await API.cancelOrder(orderId);
+          Toast.success('Order cancelled successfully.');
+          loadOrders();
+        } catch (err) {
+          Toast.error(err.message || 'Failed to cancel order.');
+        }
+      }
+    }
+
+    // Filter Buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderOrders();
+      });
+    });
+
+    loadOrders();
+  </script>
+</body>
+</html>

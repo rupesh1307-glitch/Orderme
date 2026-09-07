@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrderMe - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="toast.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-title">
+                <a href="index.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/46639de8dd386020db4cd4f755de0828b26e6c16/Gemini_Generated_Image_959jgv959jgv959j.png" alt="OrderMe Logo">
+                </a>
+            </div>
+
+            <h2 class="auth-subtitle">Welcome Back</h2>
+            <p class="auth-desc">Sign in to your OrderMe account to continue</p>
+
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" placeholder="name@example.com" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="auth-btn" id="submitBtn">Sign In &rarr;</button>
+            </form>
+
+            <!-- Quick Demo Credentials for Fast Review -->
+            <div class="demo-box">
+                <div class="demo-title">⚡ Quick 1-Click Demo Logins</div>
+                <div class="demo-btn-group">
+                    <button type="button" class="demo-btn" id="demoCustomerBtn">👤 Customer Demo</button>
+                    <button type="button" class="demo-btn admin-demo" id="demoAdminBtn">🔐 Admin Demo</button>
+                </div>
+            </div>
+
+            <p class="auth-switch">
+                New to OrderMe?
+                <a href="signup.html">Create an account</a>
+            </p>
+            <p class="auth-back">
+                <a href="index.html">&larr; Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Check if already logged in
+        if (API.isLoggedIn()) {
+            const user = API.getUser();
+            if (user && user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        // Demo Login Quick-Fill Handlers
+        document.getElementById('demoCustomerBtn').addEventListener('click', () => {
+            emailInput.value = 'user@orderme.com';
+            passwordInput.value = 'password123';
+            Toast.info('Filled Customer demo credentials');
+        });
+
+        document.getElementById('demoAdminBtn').addEventListener('click', () => {
+            emailInput.value = 'admin@orderme.com';
+            passwordInput.value = 'admin123';
+            Toast.info('Filled Admin demo credentials');
+        });
+
+        // Form Submit Handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                Toast.error('Please enter both email and password');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+
+            try {
+                const res = await API.login(email, password);
+                Toast.success(`Welcome back, ${res.user.name}!`);
+
+                setTimeout(() => {
+                    if (res.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'home.html';
+                    }
+                }, 800);
+            } catch (err) {
+                console.error(err);
+                Toast.error(err.message || 'Invalid email or password');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In →';
+            }
+        });
+    </script>
+</body>
+</html>

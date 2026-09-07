@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Admin Control Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    /* Modal styles */
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .admin-modal-card {
+      background: white;
+      border-radius: 16px;
+      max-width: 550px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <span style="font-size:1.6rem;">⚡</span>
+        <span>Order<span style="color:#f59e0b;">Me</span> Admin</span>
+      </div>
+
+      <ul class="admin-nav">
+        <li class="active" data-tab="overview">📊 Overview &amp; Analytics</li>
+        <li data-tab="orders">📦 Order Management</li>
+        <li data-tab="products">🏷️ Product Catalog</li>
+        <li onclick="window.location.href='home.html'">🛒 View Storefront</li>
+        <li onclick="window.location.href='profile.html'">👤 Admin Profile</li>
+        <li onclick="API.logout()" style="color:#ef4444;margin-top:auto;">🚪 Logout</li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <div class="admin-top-bar">
+        <div>
+          <h1 id="pageHeading">Dashboard Overview</h1>
+          <p style="color:#64748b;font-size:0.9rem;">Real-time e-commerce performance metrics</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="adminGreeting" style="font-weight:600;font-size:0.9rem;color:#334155;">Admin User</span>
+          <button class="primary-btn" id="headerActionBtn" style="padding:7px 16px;font-size:0.85rem;" onclick="openAddProductModal()">
+            + Add Product
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="overviewTab">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-rev">💰</div>
+            <div>
+              <div class="kpi-val" id="kpiRevenue">₹0</div>
+              <div class="kpi-label">Total Revenue</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-ord">📦</div>
+            <div>
+              <div class="kpi-val" id="kpiOrders">0</div>
+              <div class="kpi-label">Total Orders</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-usr">👥</div>
+            <div>
+              <div class="kpi-val" id="kpiCustomers">0</div>
+              <div class="kpi-label">Registered Customers</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon kpi-stk">⚠️</div>
+            <div>
+              <div class="kpi-val" id="kpiLowStock">0</div>
+              <div class="kpi-label">Low Stock Alerts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-table-wrap">
+          <div class="table-header-bar">
+            <h3 style="font-size:1.1rem;font-weight:700;">Recent Customer Orders</h3>
+            <button class="secondary-btn" style="padding:4px 12px;font-size:0.8rem;" onclick="switchTab('orders')">View All &rarr;</button>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersTbody">
+              <tr><td colspan="6" style="text-align:center;padding:20px;color:#64748b;">Loading recent orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: ORDER MANAGEMENT -->
+      <div id="ordersTab" style="display:none;">
+        <div class="admin-table-wrap">
+          <div class="table-header-bar">
+            <h3 style="font-size:1.1rem;font-weight:700;">All Customer Orders</h3>
+            <div style="display:flex;gap:8px;">
+              <select id="orderStatusFilter" class="sort-select" onchange="loadAdminOrders()">
+                <option value="all">All Statuses</option>
+                <option value="Placed">Placed</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <button class="secondary-btn" style="padding:6px 12px;font-size:0.85rem;" onclick="loadAdminOrders()">🔄 Refresh</button>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order Ref</th>
+                <th>Customer Details</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Change Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allOrdersTbody">
+              <tr><td colspan="6" style="text-align:center;padding:20px;">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: PRODUCT CATALOG -->
+      <div id="productsTab" style="display:none;">
+        <div class="admin-table-wrap">
+          <div class="table-header-bar">
+            <h3 style="font-size:1.1rem;font-weight:700;">Product Inventory Catalog</h3>
+            <button class="primary-btn" style="padding:6px 14px;font-size:0.85rem;" onclick="openAddProductModal()">+ Add New Product</button>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Rating</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allProductsTbody">
+              <tr><td colspan="6" style="text-align:center;padding:20px;">Loading products...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="admin-modal" id="productModal">
+    <div class="admin-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+        <h3 id="productModalTitle" style="font-size:1.3rem;font-weight:700;">Add New Product</h3>
+        <button onclick="closeProductModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="productForm" class="auth-form" style="gap:0.8rem;">
+        <input type="hidden" id="editProdId">
+        <div class="form-group">
+          <label>Product Title *</label>
+          <input type="text" id="prodTitle" required placeholder="e.g. Sony WH-1000XM5 Headphones">
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="prodCategory" class="sort-select" style="padding:10px;border-radius:8px;" required>
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group">
+            <label>Selling Price (₹) *</label>
+            <input type="number" id="prodPrice" required placeholder="24999">
+          </div>
+          <div class="form-group">
+            <label>Original Price (₹)</label>
+            <input type="number" id="prodOrigPrice" placeholder="29999">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Stock Quantity *</label>
+          <input type="number" id="prodStock" required placeholder="50" value="50">
+        </div>
+        <div class="form-group">
+          <label>Product Image URL *</label>
+          <input type="url" id="prodImage" required placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="prodDesc" rows="3" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:0.9rem;" placeholder="Key features, specs, and details..."></textarea>
+        </div>
+
+        <button type="submit" class="primary-btn" id="saveProdBtn" style="margin-top:1rem;width:100%;justify-content:center;">
+          Save Product
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // Security check: only admin can view this page
+    const currentUser = API.getUser();
+    if (!API.isLoggedIn() || !currentUser || currentUser.role !== 'admin') {
+      alert('Access Denied. Admin privileges required.');
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('adminGreeting').textContent = `Logged in as: ${currentUser.name}`;
+
+    let categoriesMap = [];
+
+    // Navigation Tabs
+    function switchTab(tabName) {
+      document.querySelectorAll('.admin-nav li').forEach(li => li.classList.remove('active'));
+      const activeLi = document.querySelector(`.admin-nav li[data-tab="${tabName}"]`);
+      if (activeLi) activeLi.classList.add('active');
+
+      document.getElementById('overviewTab').style.display = tabName === 'overview' ? 'block' : 'none';
+      document.getElementById('ordersTab').style.display = tabName === 'orders' ? 'block' : 'none';
+      document.getElementById('productsTab').style.display = tabName === 'products' ? 'block' : 'none';
+
+      const titles = {
+        overview: 'Dashboard Overview',
+        orders: 'Customer Orders Management',
+        products: 'Product Inventory & Catalog'
+      };
+      document.getElementById('pageHeading').textContent = titles[tabName] || 'Admin Portal';
+
+      if (tabName === 'overview') loadOverview();
+      else if (tabName === 'orders') loadAdminOrders();
+      else if (tabName === 'products') loadAdminProducts();
+    }
+
+    document.querySelectorAll('.admin-nav li[data-tab]').forEach(li => {
+      li.addEventListener('click', () => switchTab(li.dataset.tab));
+    });
+
+    // ---------------- LOAD OVERVIEW ----------------
+    async function loadOverview() {
+      try {
+        const res = await API.getAdminStats();
+        const data = res.data;
+
+        document.getElementById('kpiRevenue').textContent = `₹${data.totalRevenue.toLocaleString('en-IN')}`;
+        document.getElementById('kpiOrders').textContent = data.totalOrders;
+        document.getElementById('kpiCustomers').textContent = data.totalCustomers;
+        document.getElementById('kpiLowStock').textContent = data.lowStockCount;
+
+        const tbody = document.getElementById('recentOrdersTbody');
+        const recent = data.recentOrders || [];
+
+        if (!recent.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;">No recent orders.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = recent.map(o => `
+          <tr>
+            <td><strong>#${o.order_number}</strong></td>
+            <td>${o.customer_name}</td>
+            <td>₹${o.total_amount.toLocaleString('en-IN')}</td>
+            <td><span style="text-transform:uppercase;font-size:0.8rem;font-weight:600;">${o.payment_method}</span></td>
+            <td><span class="order-status status-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span></td>
+            <td style="color:#64748b;font-size:0.8rem;">${new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        Toast.error('Failed to load dashboard metrics');
+      }
+    }
+
+    // ---------------- LOAD ORDERS ----------------
+    async function loadAdminOrders() {
+      const tbody = document.getElementById('allOrdersTbody');
+      const filter = document.getElementById('orderStatusFilter').value;
+
+      try {
+        const res = await API.getAdminOrders({ status: filter });
+        const orders = res.data || [];
+
+        if (!orders.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#64748b;">No orders found.</td></tr>`;
+          return;
+        }
+
+        const statuses = ['Placed', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td>
+              <strong>#${o.order_number}</strong>
+              <div style="font-size:0.75rem;color:#64748b;">${new Date(o.created_at).toLocaleDateString('en-IN')}</div>
+            </td>
+            <td>
+              <strong>${o.customer_name}</strong><br>
+              📞 ${o.customer_phone}<br>
+              <span style="font-size:0.8rem;color:#64748b;">${o.shipping_city}</span>
+            </td>
+            <td>
+              ${(o.items || []).map(i => `<div style="font-size:0.8rem;">• ${i.product_title} (${i.quantity}x)</div>`).join('')}
+            </td>
+            <td><strong>₹${o.total_amount.toLocaleString('en-IN')}</strong></td>
+            <td>
+              <select class="status-dropdown" onchange="changeOrderStatus(${o.id}, this.value)">
+                ${statuses.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <button class="secondary-btn" style="padding:4px 8px;font-size:0.75rem;" onclick="window.open('trackorder.html?orderId=${o.id}')">
+                🔍 Track
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        Toast.error('Failed to load orders');
+      }
+    }
+
+    async function changeOrderStatus(orderId, newStatus) {
+      try {
+        await API.updateOrderStatus(orderId, newStatus);
+        Toast.success(`Status updated to "${newStatus}"!`);
+      } catch (err) {
+        Toast.error(err.message || 'Failed to update order status');
+        loadAdminOrders();
+      }
+    }
+
+    // ---------------- LOAD PRODUCTS ----------------
+    async function loadAdminProducts() {
+      const tbody = document.getElementById('allProductsTbody');
+      try {
+        const res = await API.getProducts({ limit: 100 });
+        const products = res.data || [];
+
+        tbody.innerHTML = products.map(p => `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <img src="${p.image}" alt="" style="width:40px;height:40px;border-radius:6px;object-fit:cover;">
+                <div>
+                  <strong style="font-size:0.9rem;">${p.title}</strong>
+                </div>
+              </div>
+            </td>
+            <td><span style="background:#f1f5f9;padding:3px 8px;border-radius:4px;font-size:0.8rem;">${p.category_name}</span></td>
+            <td><strong>₹${p.price.toLocaleString('en-IN')}</strong></td>
+            <td>
+              <span style="font-weight:600;color:${p.stock <= 10 ? '#ef4444' : '#10b981'};">
+                ${p.stock} units
+              </span>
+            </td>
+            <td>⭐ ${p.rating.toFixed(1)}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="secondary-btn" style="padding:4px 8px;font-size:0.75rem;" onclick="openEditProduct(${p.id})">✏️ Edit</button>
+                <button class="secondary-btn" style="padding:4px 8px;font-size:0.75rem;color:#ef4444;" onclick="deleteProduct(${p.id})">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        Toast.error('Failed to load product catalog');
+      }
+    }
+
+    // ---------------- PRODUCT MODAL (ADD / EDIT) ----------------
+    async function loadCategoryDropdown() {
+      const select = document.getElementById('prodCategory');
+      const res = await API.getCategories();
+      categoriesMap = res.data || [];
+      select.innerHTML = categoriesMap.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    function openAddProductModal() {
+      document.getElementById('productModalTitle').textContent = 'Add New Product';
+      document.getElementById('editProdId').value = '';
+      document.getElementById('productForm').reset();
+      document.getElementById('productModal').style.display = 'flex';
+    }
+
+    async function openEditProduct(productId) {
+      try {
+        const res = await API.getProductById(productId);
+        const p = res.data;
+
+        document.getElementById('productModalTitle').textContent = 'Edit Product';
+        document.getElementById('editProdId').value = p.id;
+        document.getElementById('prodTitle').value = p.title;
+        document.getElementById('prodCategory').value = p.category_id;
+        document.getElementById('prodPrice').value = p.price;
+        document.getElementById('prodOrigPrice').value = p.original_price || '';
+        document.getElementById('prodStock').value = p.stock;
+        document.getElementById('prodImage').value = p.image;
+        document.getElementById('prodDesc').value = p.description || '';
+
+        document.getElementById('productModal').style.display = 'flex';
+      } catch (err) {
+        Toast.error('Could not fetch product for edit');
+      }
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').style.display = 'none';
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editProdId').value;
+      const title = document.getElementById('prodTitle').value.trim();
+      const category_id = document.getElementById('prodCategory').value;
+      const price = document.getElementById('prodPrice').value;
+      const original_price = document.getElementById('prodOrigPrice').value;
+      const stock = document.getElementById('prodStock').value;
+      const image = document.getElementById('prodImage').value.trim();
+      const description = document.getElementById('prodDesc').value.trim();
+
+      const payload = { title, category_id, price, original_price, stock, image, description };
+
+      try {
+        if (id) {
+          await API.updateAdminProduct(id, payload);
+          Toast.success('Product updated successfully!');
+        } else {
+          await API.createAdminProduct(payload);
+          Toast.success('Product created successfully!');
+        }
+        closeProductModal();
+        loadAdminProducts();
+        loadOverview();
+      } catch (err) {
+        Toast.error(err.message || 'Failed to save product');
+      }
+    });
+
+    async function deleteProduct(productId) {
+      if (confirm('Are you sure you want to delete this product from the store catalog?')) {
+        try {
+          await API.deleteAdminProduct(productId);
+          Toast.success('Product removed.');
+          loadAdminProducts();
+          loadOverview();
+        } catch (err) {
+          Toast.error(err.message || 'Failed to delete product');
+        }
+      }
+    }
+
+    // Initialize Admin
+    loadCategoryDropdown();
+    loadOverview();
+  </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Shopping Cart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    .order-summary-card {
+      background: #ffffff;
+      padding: 1.8rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 90px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+      font-size: 0.95rem;
+      color: #475569;
+    }
+    .summary-row.total-row {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0f172a;
+      border-top: 2px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+    .coupon-box {
+      display: flex;
+      gap: 8px;
+      margin: 1.2rem 0;
+    }
+    .coupon-box input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      outline: none;
+    }
+    .coupon-box button {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .free-shipping-bar {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    @media (max-width: 850px) {
+      .cart-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Managed by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main class="cart-page">
+    <div class="cart-layout">
+      <!-- Left: Cart Items List -->
+      <div class="cart-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border);">
+          <h1 style="margin-bottom:0;padding-bottom:0;border-bottom:none;">Shopping Cart</h1>
+          <button id="clearCartBtn" style="background:none;border:none;color:#ef4444;font-size:0.85rem;font-weight:600;cursor:pointer;">Clear Cart</button>
+        </div>
+
+        <div id="cartContainer">
+          <div style="text-align:center;padding:40px;color:#64748b;">Loading cart items...</div>
+        </div>
+      </div>
+
+      <!-- Right: Order Summary Card -->
+      <div class="order-summary-card" id="summaryBox" style="display:none;">
+        <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:1.2rem;color:#0f172a;">Order Summary</h3>
+        
+        <div class="free-shipping-bar" id="freeShippingBanner">
+          <span>🚚</span>
+          <span id="freeShippingText">Add ₹500 more for Free Delivery!</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Items Subtotal</span>
+          <span id="subtotalVal">₹0</span>
+        </div>
+        
+        <div class="summary-row" id="discountRow" style="display:none;color:#10b981;">
+          <span>Discount (<span id="couponCodeName"></span>)</span>
+          <span id="discountVal">-₹0</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Estimated Delivery</span>
+          <span id="shippingVal">₹0</span>
+        </div>
+
+        <div class="coupon-box">
+          <input type="text" id="couponInput" placeholder="Promo code (e.g. ORDERME10)">
+          <button id="applyCouponBtn">Apply</button>
+        </div>
+
+        <div class="summary-row total-row">
+          <span>Total Amount</span>
+          <span id="totalAmountVal">₹0</span>
+        </div>
+
+        <button id="proceedCheckoutBtn" class="primary-btn" style="width:100%;margin-top:1.2rem;text-align:center;justify-content:center;">
+          Proceed to Checkout &rarr;
+        </button>
+
+        <p style="text-align:center;font-size:0.8rem;color:#64748b;margin-top:1rem;">
+          🔒 Safe &amp; Secure 256-Bit SSL Checkout
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let appliedDiscountPercent = 0;
+    let appliedCouponName = '';
+
+    const cartContainer = document.getElementById('cartContainer');
+    const summaryBox = document.getElementById('summaryBox');
+    const subtotalVal = document.getElementById('subtotalVal');
+    const discountVal = document.getElementById('discountVal');
+    const discountRow = document.getElementById('discountRow');
+    const couponCodeName = document.getElementById('couponCodeName');
+    const shippingVal = document.getElementById('shippingVal');
+    const totalAmountVal = document.getElementById('totalAmountVal');
+    const freeShippingText = document.getElementById('freeShippingText');
+
+    async function renderCart() {
+      try {
+        const cart = await API.getCart();
+        const items = cart.items || [];
+
+        if (!items.length) {
+          cartContainer.innerHTML = `
+            <div class="empty-cart">
+              <span style="font-size:3.5rem;display:block;margin-bottom:12px;">🛒</span>
+              <h3 style="font-size:1.3rem;color:#0f172a;margin-bottom:8px;">Your cart is empty</h3>
+              <p style="color:#64748b;margin-bottom:20px;">Explore our catalog to find amazing deals on products.</p>
+              <a href="home.html" class="primary-btn" style="display:inline-block;text-decoration:none;">Start Shopping &rarr;</a>
+            </div>
+          `;
+          summaryBox.style.display = 'none';
+          document.getElementById('clearCartBtn').style.display = 'none';
+          return;
+        }
+
+        document.getElementById('clearCartBtn').style.display = 'inline-block';
+        summaryBox.style.display = 'block';
+
+        let html = '';
+        let subtotal = 0;
+
+        items.forEach(item => {
+          const itemSubtotal = item.price * (item.quantity || item.qty);
+          subtotal += itemSubtotal;
+          const prodId = item.product_id || item.id;
+          const qty = item.quantity || item.qty;
+
+          html += `
+            <div class="cart-item" data-id="${prodId}">
+              <img src="${item.image || item.img}" alt="${item.title || item.name}">
+              <div class="cart-item-info">
+                <h4>${item.title || item.name}</h4>
+                <p class="price-line">Unit Price: ₹${item.price.toLocaleString('en-IN')}</p>
+                <div class="qty-row">
+                  <span>Qty:</span>
+                  <button class="qty-btn" onclick="updateQty(${prodId}, ${qty - 1})">-</button>
+                  <span class="qty-value">${qty}</span>
+                  <button class="qty-btn" onclick="updateQty(${prodId}, ${qty + 1})">+</button>
+                </div>
+                <p class="subtotal-line">Subtotal: ₹${itemSubtotal.toLocaleString('en-IN')}</p>
+              </div>
+              <div>
+                <button class="remove-btn" onclick="removeItem(${prodId})">Remove</button>
+              </div>
+            </div>
+          `;
+        });
+
+        cartContainer.innerHTML = html;
+
+        // Computations
+        const discountAmount = Math.round((subtotal * appliedDiscountPercent) / 100);
+        const shippingFee = (subtotal - discountAmount) >= 1000 ? 0 : 49;
+        const total = (subtotal - discountAmount) + shippingFee;
+
+        subtotalVal.textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+        shippingVal.textContent = shippingFee === 0 ? 'FREE' : `₹${shippingFee}`;
+
+        if (shippingFee === 0) {
+          shippingVal.style.color = '#10b981';
+          shippingVal.style.fontWeight = '700';
+          freeShippingText.textContent = '🎉 You unlocked FREE Express Delivery!';
+        } else {
+          const needed = 1000 - (subtotal - discountAmount);
+          shippingVal.style.color = '#475569';
+          shippingVal.style.fontWeight = 'normal';
+          freeShippingText.textContent = `Add ₹${needed.toLocaleString('en-IN')} more for FREE Delivery!`;
+        }
+
+        if (appliedDiscountPercent > 0) {
+          discountRow.style.display = 'flex';
+          couponCodeName.textContent = appliedCouponName;
+          discountVal.textContent = `-₹${discountAmount.toLocaleString('en-IN')}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        totalAmountVal.textContent = `₹${total.toLocaleString('en-IN')}`;
+      } catch (err) {
+        console.error(err);
+        cartContainer.innerHTML = `<p style="color:#ef4444;text-align:center;">Failed to load cart: ${err.message}</p>`;
+      }
+    }
+
+    async function updateQty(productId, newQty) {
+      try {
+        if (newQty <= 0) {
+          await API.removeFromCart(productId);
+          Toast.info('Item removed from cart.');
+        } else {
+          await API.updateCartItem(productId, newQty);
+        }
+        renderCart();
+      } catch (err) {
+        Toast.error(err.message || 'Failed to update quantity');
+      }
+    }
+
+    async function removeItem(productId) {
+      try {
+        await API.removeFromCart(productId);
+        Toast.info('Item removed.');
+        renderCart();
+      } catch (err) {
+        Toast.error('Failed to remove item');
+      }
+    }
+
+    document.getElementById('clearCartBtn').onclick = async () => {
+      if (confirm('Are you sure you want to clear your cart?')) {
+        await API.clearCart();
+        Toast.info('Cart cleared');
+        renderCart();
+      }
+    };
+
+    // Coupon logic
+    document.getElementById('applyCouponBtn').onclick = () => {
+      const code = document.getElementById('couponInput').value.trim().toUpperCase();
+      if (!code) {
+        Toast.error('Please enter a coupon code.');
+        return;
+      }
+      if (code === 'ORDERME10') {
+        appliedDiscountPercent = 10;
+        appliedCouponName = '10% OFF';
+        Toast.success('Coupon ORDERME10 applied! (10% Discount)');
+        renderCart();
+      } else if (code === 'WELCOME50') {
+        appliedDiscountPercent = 15;
+        appliedCouponName = '15% OFF';
+        Toast.success('Welcome offer applied! (15% Discount)');
+        renderCart();
+      } else {
+        Toast.error('Invalid coupon code. Try "ORDERME10"');
+      }
+    };
+
+    document.getElementById('proceedCheckoutBtn').onclick = () => {
+      window.location.href = 'checkout.html';
+    };
+
+    renderCart();
+  </script>
+</body>
+</html>

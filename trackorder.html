@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Live Package Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    .tracking-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      box-shadow: var(--shadow-sm);
+      margin-top: 1.5rem;
+    }
+    .driver-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .driver-avatar {
+      width: 50px;
+      height: 50px;
+      background: #2563eb;
+      color: white;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    .progress-bar-wrap {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 1.5rem 0 2rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      width: 20%;
+      transition: width 0.8s ease;
+    }
+    .stage-steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .stage-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .stage-icon-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: #94a3b8;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+    .stage-step.active .stage-icon-circle {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.25);
+    }
+    .stage-step.completed .stage-icon-circle {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    .stage-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+    .stage-step.active .stage-label {
+      color: #2563eb;
+      font-weight: 700;
+    }
+    .stage-step.completed .stage-label {
+      color: #10b981;
+    }
+    @media (max-width: 600px) {
+      .stage-label { font-size: 0.65rem; }
+      .stage-icon-circle { width: 28px; height: 28px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Handled by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main class="track-page">
+    <div class="track-box">
+      <h1>Track Your Package</h1>
+      <p style="color:#64748b;margin-bottom:1.5rem;font-size:0.95rem;">
+        Enter your Order ID (e.g. ORD-1234-5678 or Numeric ID) to see real-time delivery status
+      </p>
+
+      <div class="track-search">
+        <input type="text" id="trackOrderIdInput" placeholder="Order ID / Reference Number...">
+        <button id="trackBtn" class="primary-btn" style="white-space:nowrap;">Track Package</button>
+      </div>
+
+      <!-- Tracking Results Section -->
+      <div id="trackResultBox" style="display:none;">
+        <div class="tracking-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;padding-bottom:1rem;border-bottom:1px solid var(--border);">
+            <div>
+              <span style="font-size:0.8rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Tracking Number</span>
+              <h2 id="dispOrderNumber" style="font-size:1.4rem;color:#0f172a;margin-top:2px;">ORD-XXXX</h2>
+            </div>
+            <div style="text-align:right;">
+              <span id="dispOrderStatus" class="order-status status-shipped" style="font-size:0.85rem;padding:6px 14px;">Shipped</span>
+              <div id="dispPlacedDate" style="font-size:0.8rem;color:#64748b;margin-top:4px;">Placed: -</div>
+            </div>
+          </div>
+
+          <!-- Progress Bar & 5 Stages -->
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+
+          <div class="stage-steps" id="stagesContainer">
+            <!-- 5 Steps -->
+            <div class="stage-step" id="stage-0">
+              <div class="stage-icon-circle">1</div>
+              <span class="stage-label">Placed</span>
+            </div>
+            <div class="stage-step" id="stage-1">
+              <div class="stage-icon-circle">2</div>
+              <span class="stage-label">Confirmed</span>
+            </div>
+            <div class="stage-step" id="stage-2">
+              <div class="stage-icon-circle">3</div>
+              <span class="stage-label">Shipped</span>
+            </div>
+            <div class="stage-step" id="stage-3">
+              <div class="stage-icon-circle">4</div>
+              <span class="stage-label">Out for Delivery</span>
+            </div>
+            <div class="stage-step" id="stage-4">
+              <div class="stage-icon-circle">5</div>
+              <span class="stage-label">Delivered</span>
+            </div>
+          </div>
+
+          <!-- Delivery Partner Simulation -->
+          <div class="driver-card" id="driverCard">
+            <div class="driver-avatar">🚚</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:#1e3a8a;font-size:0.95rem;">OrderMe Express Logistics</div>
+              <div style="font-size:0.85rem;color:#3b82f6;">Agent: Rahul Sharma (Vehicle: EV-7840)</div>
+              <div style="font-size:0.8rem;color:#64748b;margin-top:2px;">📍 GPS Signal: Active &bull; Approaching Destination Hub</div>
+            </div>
+            <button class="secondary-btn" style="padding:5px 10px;font-size:0.75rem;" onclick="Toast.info('Connecting to courier dispatch...')">📞 Call Agent</button>
+          </div>
+
+          <!-- Timeline Events -->
+          <h3 style="font-size:1.1rem;margin:1.5rem 0 0.8rem;">Delivery History</h3>
+          <ul class="status-timeline" id="timelineList">
+            <!-- Populated via API -->
+          </ul>
+
+          <!-- Destination Address & Items -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <div>
+              <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Deliver To</span>
+              <p id="dispCustomerAddress" style="font-size:0.9rem;color:#1e293b;margin-top:4px;line-height:1.4;"></p>
+            </div>
+            <div>
+              <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Package Contents</span>
+              <div id="dispPackageItems" style="font-size:0.85rem;color:#1e293b;margin-top:4px;"></div>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:2rem;">
+            <button id="refreshTrackBtn" class="secondary-btn" style="padding:8px 18px;">🔄 Refresh Live Tracking</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    const stages = ['Placed', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered'];
+
+    const input = document.getElementById('trackOrderIdInput');
+    const trackBtn = document.getElementById('trackBtn');
+    const resultBox = document.getElementById('trackResultBox');
+
+    // Read URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialOrderId = urlParams.get('orderId') || urlParams.get('orderNumber');
+    if (initialOrderId) {
+      input.value = initialOrderId;
+      doTrack(initialOrderId);
+    }
+
+    trackBtn.addEventListener('click', () => {
+      const term = input.value.trim();
+      if (term) doTrack(term);
+      else Toast.error('Please enter an Order ID');
+    });
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const term = input.value.trim();
+        if (term) doTrack(term);
+      }
+    });
+
+    document.getElementById('refreshTrackBtn').addEventListener('click', () => {
+      const term = input.value.trim();
+      if (term) {
+        doTrack(term);
+        Toast.success('Tracking status refreshed!');
+      }
+    });
+
+    async function doTrack(orderIdentifier) {
+      try {
+        const res = await API.trackOrder(orderIdentifier);
+        const data = res.data;
+
+        resultBox.style.display = 'block';
+        document.getElementById('dispOrderNumber').textContent = data.orderNumber;
+        document.getElementById('dispOrderStatus').textContent = data.status;
+        document.getElementById('dispOrderStatus').className = `order-status status-${data.status.toLowerCase().replace(/\s+/g, '-')}`;
+        document.getElementById('dispPlacedDate').textContent = `Placed on: ${new Date(data.createdAt).toLocaleDateString('en-IN')}`;
+        document.getElementById('dispCustomerAddress').innerHTML = `<strong>${data.customerName}</strong><br>${data.shippingAddress}`;
+
+        // Package items
+        const itemsHtml = (data.items || []).map(i => `<div>&bull; ${i.product_title} (&times;${i.quantity})</div>`).join('');
+        document.getElementById('dispPackageItems').innerHTML = itemsHtml || '1 Package item';
+
+        // Stage progress or Cancelled view
+        const cancelBanner = document.getElementById('cancelBanner');
+        if (data.status === 'Cancelled' || data.isCancelled) {
+          document.getElementById('stagesContainer').style.display = 'none';
+          document.getElementById('driverCard').style.display = 'none';
+          document.querySelector('.progress-bar-wrap').style.display = 'none';
+
+          if (!cancelBanner) {
+            const banner = document.createElement('div');
+            banner.id = 'cancelBanner';
+            banner.style.background = '#fef2f2';
+            banner.style.border = '1.5px solid #fca5a5';
+            banner.style.color = '#991b1b';
+            banner.style.padding = '14px 18px';
+            banner.style.borderRadius = '12px';
+            banner.style.fontWeight = '600';
+            banner.style.margin = '1.5rem 0';
+            banner.style.display = 'flex';
+            banner.style.alignItems = 'center';
+            banner.style.gap = '12px';
+            banner.innerHTML = `<span style="font-size:1.8rem;">🚫</span> <div><div style="font-size:1rem;font-weight:700;">Order Cancelled</div><div style="font-size:0.85rem;font-weight:normal;color:#7f1d1d;margin-top:2px;">This order was cancelled. Any payment deducted will be refunded to your source account.</div></div>`;
+            document.querySelector('.tracking-card').insertBefore(banner, document.getElementById('driverCard'));
+          } else {
+            cancelBanner.style.display = 'flex';
+          }
+        } else {
+          document.getElementById('stagesContainer').style.display = 'grid';
+          document.getElementById('driverCard').style.display = 'flex';
+          document.querySelector('.progress-bar-wrap').style.display = 'block';
+          if (cancelBanner) cancelBanner.style.display = 'none';
+
+          const currentIdx = stages.indexOf(data.status);
+          const activeIdx = currentIdx >= 0 ? currentIdx : 0;
+          const percent = Math.min(100, Math.max(10, ((activeIdx + 1) / stages.length) * 100));
+          document.getElementById('progressBarFill').style.width = `${percent}%`;
+
+          for (let i = 0; i < 5; i++) {
+            const stepEl = document.getElementById(`stage-${i}`);
+            stepEl.classList.remove('active', 'completed');
+            if (i < activeIdx) {
+              stepEl.classList.add('completed');
+            } else if (i === activeIdx) {
+              stepEl.classList.add('active');
+            }
+          }
+        }
+
+        // Timeline events
+        const timelineList = document.getElementById('timelineList');
+        const history = data.trackingHistory || [];
+
+        if (history.length) {
+          timelineList.innerHTML = history.map((ev, idx) => `
+            <li class="${idx === history.length - 1 ? 'active-step' : 'completed-step'}">
+              <span class="status-title">${ev.title || ev.status}</span>
+              <div class="status-desc">${ev.description || ''} ${ev.location ? `&bull; 📍 ${ev.location}` : ''}</div>
+              <span class="status-date">${new Date(ev.event_time).toLocaleString('en-IN')}</span>
+            </li>
+          `).join('');
+        } else {
+          timelineList.innerHTML = `
+            <li class="active-step">
+              <span class="status-title">${data.status}</span>
+              <div class="status-desc">Package is currently ${data.status.toLowerCase()}.</div>
+              <span class="status-date">${new Date(data.createdAt).toLocaleString('en-IN')}</span>
+            </li>
+          `;
+        }
+
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        Toast.error(err.message || 'No order found with this reference.');
+        resultBox.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

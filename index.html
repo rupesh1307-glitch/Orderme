@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrderMe - Fast E-Commerce Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="toast.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html" style="display:flex;align-items:center;text-decoration:none;color:white;gap:10px;">
+                    <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo">
+                    <span style="font-weight:700;font-size:1.5rem;letter-spacing:-0.5px;">Order<span style="color:#f59e0b;">Me</span></span>
+                </a>
+            </div>
+
+            <ul class="nav-links" id="mainNavLinks">
+                <li class="nav-search">
+                    <button id="searchToggle" class="search-icon-btn" title="Search">🔍</button>
+                    <input type="text" id="navSearch" class="search-input" placeholder="Search products..." />
+                </li>
+                <li><a href="#home">Home</a></li>
+                <li><a href="home.html">Shop Catalog</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#products">Featured</a></li>
+                <li><a href="trackorder.html">Track Order</a></li>
+                <li id="authNavSlot"><a href="login.html">Login</a></li>
+                <li id="signupNavSlot"><a href="signup.html">Sign Up</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- HERO with background slider -->
+    <section id="home" class="hero">
+        <div class="hero-slider">
+            <div class="hero-slide active" style="background-image: url('https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/5e4b58516424cdf9c2ff08d2bf0e3a9f602e2c6d/Gemini_Generated_Image_cdhhdicdhhdicdhh.png');"></div>
+            <div class="hero-slide" style="background-image: url('https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/6c411e06701846380d84ea8ca67d5328ee0e2a1b/Gemini_Generated_Image_ygqxgygqxgygqxgy%20(2).png');"></div>
+            <div class="hero-slide" style="background-image: url('https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/b69b26800ea18ea051e536f13b683a4519ebab00/Gemini_Generated_Image_ygqxgygqxgygqxgy%20(1).png');"></div>
+            <div class="hero-slide" style="background-image: url('https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/5f527100d69e1ffc04fb64129e47158d94e06846/Gemini_Generated_Image_ygqxgygqxgygqxgy%20(3).png');"></div>
+        </div>
+
+        <div class="hero-content">
+            <span class="hero-tag" data-aos="fade-down">⚡ Next-Gen Express E-Commerce</span>
+            <h1 data-aos="fade-up">Welcome to OrderMe</h1>
+            <p data-aos="fade-up" data-aos-delay="200">Discover premium electronics, flagship smartphones, fashion & everyday essentials delivered in minutes.</p>
+            <div class="hero-btn-group" data-aos="zoom-in" data-aos-delay="350">
+                <a href="home.html" class="cta-btn primary-hero-btn">Explore Store &rarr;</a>
+                <a href="trackorder.html" class="cta-btn secondary-hero-btn">Track Order</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 data-aos="fade-up">Why Choose OrderMe</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">🚚</div>
+                    <h3>Lightning Fast Delivery</h3>
+                    <p>Guaranteed express delivery within 30 minutes with real-time status tracking.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>100% Secure Payments</h3>
+                    <p>Encrypted transactions via Credit/Debit Cards, instant UPI QR, and Cash on Delivery.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">📱</div>
+                    <h3>Live Order Tracking</h3>
+                    <p>Interactive 5-stage timeline from packing to your front doorstep.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="products" class="products">
+        <div class="container">
+            <div class="section-heading" data-aos="fade-up">
+                <h2>Featured Products</h2>
+                <p>Top trending picks curated for you</p>
+            </div>
+            <div class="products-grid" id="featuredProductsGrid">
+                <!-- Loaded dynamically via API -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
+                    Loading featured products...
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 36px;" data-aos="fade-up">
+                <a href="home.html" class="cta-btn" style="display:inline-block;">View All Products &rarr;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>OrderMe</h3>
+                <p>Your one-stop destination for lightning-fast shopping and premium quality products.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="home.html">Catalog</a></li>
+                    <li><a href="cart.html">Shopping Cart</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="trackorder.html">Track Order</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Customer Support</h4>
+                <p>📞 1800-123-ORDER</p>
+                <p>✉️ support@orderme.com</p>
+                <p>🕒 24/7 Live Support</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        AOS.init({ duration: 900, once: true });
+
+        // Update nav based on auth
+        function syncLandingNav() {
+            const user = API.getUser();
+            const logged = API.isLoggedIn();
+            const authSlot = document.getElementById('authNavSlot');
+            const signupSlot = document.getElementById('signupNavSlot');
+
+            if (logged && user) {
+                if (authSlot) {
+                    authSlot.innerHTML = `<a href="profile.html">👤 ${user.name.split(' ')[0]}</a>`;
+                }
+                if (signupSlot) {
+                    signupSlot.innerHTML = `<a href="#" onclick="API.logout(); return false;">Logout</a>`;
+                }
+            }
+        }
+
+        // Load featured products from Backend API
+        async function loadFeatured() {
+            const grid = document.getElementById('featuredProductsGrid');
+            try {
+                const res = await API.getProducts({ featured: 'true', limit: 6 });
+                const products = res.data && res.data.length ? res.data : [];
+
+                if (!products.length) {
+                    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;">No featured products available right now.</p>';
+                    return;
+                }
+
+                grid.innerHTML = products.map(p => {
+                    const discount = p.original_price ? Math.round(((p.original_price - p.price) / p.original_price) * 100) : null;
+                    return `
+                        <div class="product-card" data-aos="fade-up">
+                            <div class="product-img" style="background-image: url('${p.image}');">
+                                ${discount ? `<span class="badge-discount">${discount}% OFF</span>` : ''}
+                            </div>
+                            <div class="product-info">
+                                <span class="product-category-tag">${p.category_name}</span>
+                                <h3>${p.title}</h3>
+                                <div class="product-rating">⭐ ${p.rating.toFixed(1)} <span style="color:#94a3b8;font-size:0.8rem;">(${p.review_count || 0})</span></div>
+                                <div class="price-row">
+                                    <span class="price-current">₹${p.price.toLocaleString('en-IN')}</span>
+                                    ${p.original_price ? `<span class="price-original">₹${p.original_price.toLocaleString('en-IN')}</span>` : ''}
+                                </div>
+                                <div class="card-btn-row">
+                                    <button class="cta-btn add-btn" onclick="handleAddToCart(${p.id})">Add to Cart</button>
+                                    <a href="home.html?productId=${p.id}" class="cta-btn secondary-card-btn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#ef4444;">Failed to load featured products.</p>';
+            }
+        }
+
+        async function handleAddToCart(productId) {
+            try {
+                const prod = await API.getProductById(productId);
+                await API.addToCart(prod.data, 1);
+                Toast.success(`Added "${prod.data.title}" to cart!`);
+            } catch (err) {
+                Toast.error(err.message || 'Failed to add item to cart');
+            }
+        }
+
+        // Search Input
+        const navSearch = document.getElementById('navSearch');
+        const searchToggle = document.getElementById('searchToggle');
+
+        if (searchToggle && navSearch) {
+            searchToggle.addEventListener('click', () => {
+                navSearch.classList.toggle('active');
+                if (navSearch.classList.contains('active')) {
+                    navSearch.focus();
+                }
+            });
+
+            navSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const q = navSearch.value.trim();
+                    if (q) {
+                        window.location.href = `home.html?q=${encodeURIComponent(q)}`;
+                    }
+                }
+            });
+        }
+
+        // Hero Slide Timer
+        const heroSlides = document.querySelectorAll('.hero-slide');
+        let heroCurrent = 0;
+        function changeHeroSlide() {
+            if (heroSlides.length < 2) return;
+            heroSlides[heroCurrent].classList.remove('active');
+            heroCurrent = (heroCurrent + 1) % heroSlides.length;
+            heroSlides[heroCurrent].classList.add('active');
+        }
+        setInterval(changeHeroSlide, 4500);
+
+        syncLandingNav();
+        loadFeatured();
+    </script>
+</body>
+</html>

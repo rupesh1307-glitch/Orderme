@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProductDataModel",
+  "description": "Standard E-Commerce Product Data Model Specification",
+  "sample_instance": {
+    "id": 101,
+    "sku": "APL-IP15PM-256-BLU",
+    "title": "iPhone 15 Pro Max (256 GB) - Titanium Blue",
+    "slug": "iphone-15-pro-max-256gb",
+    "brand": "Apple",
+    "category": {
+      "id": 1,
+      "name": "Mobiles",
+      "slug": "mobiles"
+    },
+    "pricing": {
+      "currency": "INR",
+      "symbol": "₹",
+      "current_price": 134900,
+      "original_price": 159900,
+      "discount_percentage": 15,
+      "tax_rate_percent": 18
+    },
+    "inventory": {
+      "stock_quantity": 25,
+      "low_stock_threshold": 5,
+      "is_in_stock": true,
+      "allow_backorders": false
+    },
+    "media": {
+      "thumbnail": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1000",
+        "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=1000"
+      ]
+    },
+    "ratings_and_reviews": {
+      "average_rating": 4.9,
+      "total_reviews": 142,
+      "rating_breakdown": {
+        "5_star": 120,
+        "4_star": 18,
+        "3_star": 3,
+        "2_star": 1,
+        "1_star": 0
+      }
+    },
+    "specifications": {
+      "Processor": "A17 Pro chip (6-core CPU, 6-core GPU)",
+      "Display": "6.7-inch Super Retina XDR with ProMotion (120Hz)",
+      "Main Camera": "48MP Main + 12MP Ultra Wide + 12MP 5x Telephoto",
+      "Battery Life": "Up to 29 hours video playback",
+      "Connector": "USB-C with USB 3 speeds (up to 10Gb/s)",
+      "Material": "Aerospace-grade titanium design with Ceramic Shield front"
+    },
+    "variants": [
+      {
+        "variant_id": "v-101-1",
+        "color": "Titanium Blue",
+        "storage": "256GB",
+        "price": 134900,
+        "stock": 12
+      },
+      {
+        "variant_id": "v-101-2",
+        "color": "Natural Titanium",
+        "storage": "512GB",
+        "price": 154900,
+        "stock": 8
+      }
+    ],
+    "flags": {
+      "is_featured": true,
+      "is_trending": true,
+      "is_active": true,
+      "free_delivery_eligible": true
+    },
+    "timestamps": {
+      "created_at": "2026-09-07T12:00:00.000Z",
+      "updated_at": "2026-09-07T13:40:00.000Z"
+    }
+  }
+}

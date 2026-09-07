@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - My Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    .profile-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      max-width: 650px;
+      margin: 2rem auto;
+      box-shadow: var(--shadow-sm);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Handled by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main style="flex:1;padding:1.5rem;">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar" id="avatarInitial">U</div>
+        <div>
+          <h2 id="profHeadingName" style="font-size:1.4rem;font-weight:700;color:#0f172a;">User Profile</h2>
+          <p id="profHeadingEmail" style="color:#64748b;font-size:0.9rem;">user@example.com</p>
+          <span id="profRoleBadge" style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:700;text-transform:uppercase;">Customer</span>
+        </div>
+      </div>
+
+      <form id="profileForm" class="checkout-form">
+        <h3 style="font-size:1.1rem;margin-bottom:0.5rem;">Personal Information</h3>
+        <div class="form-row">
+          <label for="pName">Full Name</label>
+          <input type="text" id="pName" required>
+        </div>
+        <div class="form-row">
+          <label for="pPhone">Phone Number</label>
+          <input type="tel" id="pPhone" placeholder="10-digit number">
+        </div>
+
+        <h3 style="font-size:1.1rem;margin:1.2rem 0 0.5rem;">Default Shipping Address</h3>
+        <div class="form-row">
+          <label for="pAddress">Address</label>
+          <textarea id="pAddress" rows="2" placeholder="House no, street"></textarea>
+        </div>
+        <div class="form-row two-cols">
+          <div>
+            <label for="pCity">City</label>
+            <input type="text" id="pCity">
+          </div>
+          <div>
+            <label for="pPincode">Pincode</label>
+            <input type="text" id="pPincode">
+          </div>
+        </div>
+
+        <h3 style="font-size:1.1rem;margin:1.2rem 0 0.5rem;">Change Password (Optional)</h3>
+        <div class="form-row two-cols">
+          <div>
+            <label for="pCurrentPass">Current Password</label>
+            <input type="password" id="pCurrentPass" placeholder="••••••••">
+          </div>
+          <div>
+            <label for="pNewPass">New Password</label>
+            <input type="password" id="pNewPass" placeholder="Min. 6 chars">
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:2rem;gap:1rem;">
+          <button type="button" class="secondary-btn" onclick="API.logout()" style="color:#ef4444;">Log Out</button>
+          <button type="submit" class="primary-btn" id="saveProfBtn">Save Profile Changes</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    if (!API.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await API.getProfile();
+        const u = res.user;
+
+        document.getElementById('avatarInitial').textContent = (u.name || 'U').charAt(0).toUpperCase();
+        document.getElementById('profHeadingName').textContent = u.name;
+        document.getElementById('profHeadingEmail').textContent = u.email;
+        document.getElementById('profRoleBadge').textContent = u.role;
+
+        document.getElementById('pName').value = u.name || '';
+        document.getElementById('pPhone').value = u.phone || '';
+        document.getElementById('pAddress').value = u.address || '';
+        document.getElementById('pCity').value = u.city || '';
+        document.getElementById('pPincode').value = u.pincode || '';
+      } catch (err) {
+        console.error(err);
+        Toast.error('Failed to load profile');
+      }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('pName').value.trim();
+      const phone = document.getElementById('pPhone').value.trim();
+      const address = document.getElementById('pAddress').value.trim();
+      const city = document.getElementById('pCity').value.trim();
+      const pincode = document.getElementById('pPincode').value.trim();
+      const currentPassword = document.getElementById('pCurrentPass').value;
+      const newPassword = document.getElementById('pNewPass').value;
+
+      const payload = { name, phone, address, city, pincode };
+      if (newPassword) {
+        if (!currentPassword) {
+          Toast.error('Please enter current password to set a new password');
+          return;
+        }
+        payload.currentPassword = currentPassword;
+        payload.newPassword = newPassword;
+      }
+
+      try {
+        const res = await API.updateProfile(payload);
+        Toast.success('Profile updated successfully!');
+        document.getElementById('pCurrentPass').value = '';
+        document.getElementById('pNewPass').value = '';
+        loadProfile();
+      } catch (err) {
+        Toast.error(err.message || 'Failed to update profile');
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

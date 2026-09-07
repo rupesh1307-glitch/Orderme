@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    .order-review-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .review-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .review-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .review-info {
+      flex: 1;
+    }
+    .review-info h5 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .review-info p {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    @media (max-width: 800px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Managed by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <main class="checkout-page">
+    <div class="checkout-box">
+      <h1>Secure Checkout</h1>
+
+      <div class="checkout-grid">
+        <!-- Left: Delivery Form -->
+        <section class="checkout-section">
+          <h2>1. Delivery Address</h2>
+          <form id="checkoutForm" class="checkout-form">
+            <div class="form-row">
+              <label for="fullName">Recipient Full Name *</label>
+              <input type="text" id="fullName" required placeholder="e.g. Rupesh Kumar">
+            </div>
+
+            <div class="form-row two-cols">
+              <div>
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" required placeholder="10-digit mobile number">
+              </div>
+              <div>
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@example.com">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="address">Street Address / House No. *</label>
+              <textarea id="address" rows="2" required placeholder="Flat / Building no., Street name, Landmark"></textarea>
+            </div>
+
+            <div class="form-row two-cols">
+              <div>
+                <label for="city">City *</label>
+                <input type="text" id="city" required placeholder="e.g. Mumbai">
+              </div>
+              <div>
+                <label for="pincode">Postal Pincode *</label>
+                <input type="text" id="pincode" required placeholder="6-digit code">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="notes">Delivery Instructions (Optional)</label>
+              <input type="text" id="notes" placeholder="e.g. Leave with security, call on arrival">
+            </div>
+          </form>
+        </section>
+
+        <!-- Right: Order Review -->
+        <section class="checkout-section">
+          <h2>2. Order Summary</h2>
+          <div class="order-review-box">
+            <div id="orderItemsReview">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <div class="summary-item" style="margin-top:1rem;">
+              <span>Subtotal</span>
+              <span id="reviewSubtotal">₹0</span>
+            </div>
+            <div class="summary-item">
+              <span>Delivery Fee</span>
+              <span id="reviewShipping">FREE</span>
+            </div>
+            <div class="summary-item" style="font-size:1.2rem;font-weight:700;color:#0f172a;border-top:2px solid #cbd5e1;padding-top:10px;margin-top:10px;">
+              <span>Total Payable</span>
+              <span id="reviewTotal">₹0</span>
+            </div>
+
+            <button type="button" id="proceedToPaymentBtn" class="primary-btn" style="width:100%;margin-top:1.5rem;justify-content:center;">
+              Proceed to Payment &rarr;
+            </button>
+
+            <p style="font-size:0.75rem;color:#64748b;text-align:center;margin-top:10px;">
+              By continuing, you agree to OrderMe's Terms &amp; Conditions.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let currentCart = null;
+
+    // Prefill user details if logged in
+    function prefillUserData() {
+      const user = API.getUser();
+      if (user) {
+        if (user.name) document.getElementById('fullName').value = user.name;
+        if (user.email) document.getElementById('email').value = user.email;
+        if (user.phone) document.getElementById('phone').value = user.phone;
+        if (user.address) document.getElementById('address').value = user.address;
+        if (user.city) document.getElementById('city').value = user.city;
+        if (user.pincode) document.getElementById('pincode').value = user.pincode;
+      }
+    }
+
+    async function loadReviewItems() {
+      try {
+        currentCart = await API.getCart();
+        const items = currentCart.items || [];
+        const container = document.getElementById('orderItemsReview');
+
+        if (!items.length) {
+          container.innerHTML = '<p style="color:#ef4444;">Your cart is empty.</p>';
+          document.getElementById('proceedToPaymentBtn').disabled = true;
+          return;
+        }
+
+        let html = '';
+        let subtotal = 0;
+
+        items.forEach(item => {
+          const qty = item.quantity || item.qty;
+          const cost = item.price * qty;
+          subtotal += cost;
+          html += `
+            <div class="review-item">
+              <img src="${item.image || item.img}" alt="${item.title || item.name}">
+              <div class="review-info">
+                <h5>${item.title || item.name}</h5>
+                <p>Qty: ${qty} &times; ₹${item.price.toLocaleString('en-IN')}</p>
+              </div>
+              <div style="font-weight:600;font-size:0.9rem;">
+                ₹${cost.toLocaleString('en-IN')}
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+
+        const shippingFee = subtotal >= 1000 ? 0 : 49;
+        const total = subtotal + shippingFee;
+
+        document.getElementById('reviewSubtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+        document.getElementById('reviewShipping').textContent = shippingFee === 0 ? 'FREE' : `₹${shippingFee}`;
+        document.getElementById('reviewTotal').textContent = `₹${total.toLocaleString('en-IN')}`;
+      } catch (err) {
+        console.error(err);
+        Toast.error('Could not load order details');
+      }
+    }
+
+    document.getElementById('proceedToPaymentBtn').addEventListener('click', async () => {
+      const fullName = document.getElementById('fullName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const pincode = document.getElementById('pincode').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+
+      if (!fullName || !phone || !address || !city || !pincode) {
+        Toast.error('Please fill in all mandatory delivery fields (*)');
+        return;
+      }
+
+      if (!currentCart || !currentCart.items || !currentCart.items.length) {
+        Toast.error('Your cart is empty.');
+        return;
+      }
+
+      const btn = document.getElementById('proceedToPaymentBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating order...';
+
+      try {
+        const orderPayload = {
+          customerName: fullName,
+          customerPhone: phone,
+          customerEmail: email,
+          shippingAddress: address,
+          shippingCity: city,
+          shippingPincode: pincode,
+          notes: notes,
+          paymentMethod: 'card', // default initial
+          items: currentCart.items
+        };
+
+        const res = await API.createOrder(orderPayload);
+        Toast.success('Order initiated! Redirecting to payment...');
+
+        setTimeout(() => {
+          window.location.href = `payment.html?orderId=${res.data.id}&orderNumber=${res.data.order_number}`;
+        }, 600);
+      } catch (err) {
+        console.error(err);
+        Toast.error(err.message || 'Failed to place order.');
+        btn.disabled = false;
+        btn.textContent = 'Proceed to Payment →';
+      }
+    });
+
+    prefillUserData();
+    loadReviewItems();
+  </script>
+</body>
+</html>

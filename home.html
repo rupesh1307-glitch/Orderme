@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderMe - Shop Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="toast.css">
+  <style>
+    /* Quick View Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 700px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      overflow: hidden;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      position: relative;
+      animation: modalFadeIn 0.3s ease;
+    }
+    .modal-img {
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+      object-fit: cover;
+      background: #f8fafc;
+    }
+    .modal-body {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: #f1f5f9;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @media(max-width: 650px) {
+      .modal-card { grid-template-columns: 1fr; }
+      .modal-img { height: 200px; min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top navbar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <img src="https://raw.githubusercontent.com/rupesh1307-glitch/Orderme/a2bc64170d6fdaf8043bbd135d57b6d4739df410/Gemini_Generated_Image_o2sr7fo2sr7fo2sr.png" alt="OrderMe Logo" style="height:38px;border-radius:6px;">
+        <span>Order<span style="color:#f59e0b;">Me</span></span>
+      </a>
+    </div>
+
+    <div class="nav-center">
+      <input type="text" id="searchInput" placeholder="Search by title, brand or description...">
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div class="nav-right">
+      <!-- Dynamically filled by API.setupNavbar() -->
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <!-- Left: categories -->
+    <aside class="sidebar">
+      <h3>Categories</h3>
+      <ul id="categoriesList">
+        <li class="active" data-slug="all">
+          <span>🛍️ All Products</span>
+          <span class="cat-count" id="totalProductCount">0</span>
+        </li>
+        <!-- Loaded via API -->
+      </ul>
+    </aside>
+
+    <!-- Right: products -->
+    <section class="products-area">
+      <div class="catalog-header">
+        <div>
+          <h2 id="currentCategoryTitle">All Products</h2>
+          <p id="catalogSubtitle" style="font-size:0.85rem;color:#64748b;">Showing all items</p>
+        </div>
+        <div class="catalog-controls">
+          <label for="sortSelect" style="font-size:0.85rem;font-weight:600;color:#64748b;">Sort By:</label>
+          <select id="sortSelect" class="sort-select">
+            <option value="newest">✨ Newest Arrivals</option>
+            <option value="price_asc">💵 Price: Low to High</option>
+            <option value="price_desc">💎 Price: High to Low</option>
+            <option value="rating_desc">⭐ Highest Rated</option>
+            <option value="title_asc">🔤 Alphabetical (A-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <!-- Products dynamically loaded from REST API -->
+        <div style="grid-column:1/-1;text-align:center;padding:50px;color:#64748b;">
+          Loading catalog products...
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Features strip -->
+  <section class="features-strip">
+    <div class="feature-card">
+      <img src="https://i.etsystatic.com/15689167/r/il/16e005/3229488681/il_1080xN.3229488681_88zr.jpg" alt="Fast Delivery">
+      <div>
+        <h4>30-Min Fast Delivery</h4>
+        <p>Hyperlocal logistics straight to your doorstep.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="https://st2.depositphotos.com/1431107/8761/v/450/depositphotos_87617112-stock-illustration-secure-protected-payments-icon.jpg" alt="Secure Payment">
+      <div>
+        <h4>Secure Payments</h4>
+        <p>Cards, UPI QR &amp; Cash on Delivery accepted.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFMtvO4De1-dA7YAcUVhayfnxJoFLpFcKV4Q&s" alt="Track Order">
+      <div>
+        <h4>Live Order Tracking</h4>
+        <p>Real-time updates with minute-by-minute ETA.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick View Modal -->
+  <div class="modal-overlay" id="quickViewModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalCloseBtn">&times;</button>
+      <img src="" alt="" class="modal-img" id="modalProductImg">
+      <div class="modal-body">
+        <span class="card-category" id="modalCategory">Category</span>
+        <h3 id="modalTitle" style="font-size:1.3rem;margin-bottom:8px;font-weight:700;">Product Title</h3>
+        <div class="card-rating" id="modalRating" style="margin-bottom:12px;">⭐ 4.8 (120 reviews)</div>
+        <p id="modalDesc" style="font-size:0.9rem;color:#475569;margin-bottom:1.5rem;line-height:1.5;"></p>
+        
+        <div class="card-price-row" style="margin-bottom:1.5rem;">
+          <span class="current-price" id="modalPrice" style="font-size:1.6rem;">₹0</span>
+          <span class="orig-price" id="modalOrigPrice" style="font-size:1rem;"></span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;">
+          <label style="font-weight:600;font-size:0.9rem;">Qty:</label>
+          <div class="qty-row" style="margin-bottom:0;">
+            <button class="qty-btn" id="modalQtyDec">-</button>
+            <span class="qty-value" id="modalQtyVal">1</span>
+            <button class="qty-btn" id="modalQtyInc">+</button>
+          </div>
+          <span id="modalStockStatus" style="font-size:0.8rem;color:#10b981;font-weight:600;margin-left:auto;">In Stock</span>
+        </div>
+
+        <button class="primary-btn" id="modalAddToCartBtn" style="width:100%;">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 OrderMe E-Commerce System. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/toast.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let currentCategory = 'all';
+    let currentSearch = '';
+    let currentSort = 'newest';
+    let currentModalProduct = null;
+    let modalQuantity = 1;
+
+    // Check URL params on load (e.g. ?category=mobiles or ?q=headphones)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('category')) currentCategory = urlParams.get('category');
+    if (urlParams.get('q')) {
+      currentSearch = urlParams.get('q');
+      document.getElementById('searchInput').value = currentSearch;
+    }
+    if (urlParams.get('sort')) currentSort = urlParams.get('sort');
+
+    // ---------------- LOAD CATEGORIES ----------------
+    async function loadCategories() {
+      try {
+        const res = await API.getCategories();
+        const list = document.getElementById('categoriesList');
+        const categories = res.data || [];
+
+        let totalCount = 0;
+        const catHtml = categories.map(c => {
+          totalCount += (c.product_count || 0);
+          const isActive = currentCategory === c.slug;
+          return `
+            <li class="${isActive ? 'active' : ''}" data-slug="${c.slug}">
+              <span>${c.icon || '📦'} ${c.name}</span>
+              <span class="cat-count">${c.product_count || 0}</span>
+            </li>
+          `;
+        }).join('');
+
+        list.innerHTML = `
+          <li class="${currentCategory === 'all' ? 'active' : ''}" data-slug="all">
+            <span>🛍️ All Products</span>
+            <span class="cat-count">${totalCount}</span>
+          </li>
+          ${catHtml}
+        `;
+
+        document.querySelectorAll('#categoriesList li').forEach(li => {
+          li.addEventListener('click', () => {
+            document.querySelectorAll('#categoriesList li').forEach(el => el.classList.remove('active'));
+            li.classList.add('active');
+            currentCategory = li.dataset.slug;
+            loadProducts();
+          });
+        });
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+
+    // ---------------- LOAD PRODUCTS ----------------
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      const titleEl = document.getElementById('currentCategoryTitle');
+      const subEl = document.getElementById('catalogSubtitle');
+
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #64748b;">
+          Loading products...
+        </div>
+      `;
+
+      try {
+        const params = {
+          category: currentCategory,
+          q: currentSearch,
+          sort: currentSort,
+          limit: 50
+        };
+
+        const res = await API.getProducts(params);
+        const products = res.data || [];
+
+        // Update headers
+        if (currentCategory === 'all') {
+          titleEl.textContent = currentSearch ? `Search Results for "${currentSearch}"` : 'All Products';
+        } else {
+          const activeLi = document.querySelector(`#categoriesList li[data-slug="${currentCategory}"]`);
+          titleEl.textContent = activeLi ? activeLi.querySelector('span').textContent : 'Products';
+        }
+        subEl.textContent = `Showing ${products.length} items`;
+
+        if (!products.length) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+              <span style="font-size:3rem;display:block;margin-bottom:12px;">🔍</span>
+              <h3>No products found</h3>
+              <p style="color:#64748b;margin-top:6px;">Try adjusting your search or category filters.</p>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = products.map(p => {
+          const discount = p.original_price ? Math.round(((p.original_price - p.price) / p.original_price) * 100) : null;
+          const isLowStock = p.stock > 0 && p.stock <= 10;
+          return `
+            <div class="product-card" data-id="${p.id}">
+              <div class="card-img-wrap" onclick="openQuickView(${p.id})">
+                <img src="${p.image}" alt="${p.title}" loading="lazy">
+                ${discount ? `<span class="discount-pill">${discount}% OFF</span>` : ''}
+                <span class="stock-pill ${isLowStock ? 'low' : ''}">
+                  ${p.stock > 0 ? (isLowStock ? `Only ${p.stock} left` : 'In Stock') : 'Out of Stock'}
+                </span>
+              </div>
+              <div class="card-body">
+                <span class="card-category">${p.category_name}</span>
+                <h4 title="${p.title}" onclick="openQuickView(${p.id})" style="cursor:pointer;">${p.title}</h4>
+                <div class="card-rating">⭐ ${p.rating ? p.rating.toFixed(1) : '4.5'} <span style="color:#94a3b8;font-size:0.75rem;">(${p.review_count || 0})</span></div>
+                
+                <div class="card-price-row">
+                  <span class="current-price">₹${p.price.toLocaleString('en-IN')}</span>
+                  ${p.original_price ? `<span class="orig-price">₹${p.original_price.toLocaleString('en-IN')}</span>` : ''}
+                </div>
+
+                <div class="card-actions">
+                  <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})">Add to Cart</button>
+                  <button class="buy-now-btn" onclick="handleBuyNow(${p.id})">Buy Now</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; background: #fff5f5; border-radius: 12px; border: 1px solid #fed7d7;">
+            <div style="font-size:2.5rem;margin-bottom:8px;">⚠️</div>
+            <h3 style="color:#c53030;margin-bottom:6px;">Unable to reach server</h3>
+            <p style="color:#742a2a;font-size:0.9rem;margin-bottom:14px;">Please make sure the backend server is running on port 5000.</p>
+            <button class="primary-btn" onclick="loadCategories(); loadProducts();" style="padding:6px 18px;font-size:0.85rem;">🔄 Retry Now</button>
+          </div>
+        `;
+      }
+    }
+
+    // ---------------- CART ACTIONS ----------------
+    async function handleAddToCart(productId) {
+      try {
+        const res = await API.getProductById(productId);
+        const product = res.data;
+        const addRes = await API.addToCart(product, 1);
+        Toast.success(`Added "${product.title}" to cart!`);
+      } catch (err) {
+        Toast.error(err.message || 'Failed to add item to cart');
+      }
+    }
+
+    async function handleBuyNow(productId) {
+      try {
+        const res = await API.getProductById(productId);
+        await API.addToCart(res.data, 1);
+        window.location.href = 'cart.html';
+      } catch (err) {
+        Toast.error(err.message || 'Failed to add item to cart');
+      }
+    }
+
+    // ---------------- QUICK VIEW MODAL ----------------
+    async function openQuickView(productId) {
+      try {
+        const res = await API.getProductById(productId);
+        currentModalProduct = res.data;
+        modalQuantity = 1;
+
+        document.getElementById('modalProductImg').src = currentModalProduct.image;
+        document.getElementById('modalCategory').textContent = currentModalProduct.category_name;
+        document.getElementById('modalTitle').textContent = currentModalProduct.title;
+        document.getElementById('modalDesc').textContent = currentModalProduct.description || 'Premium high-grade product from OrderMe catalog.';
+        document.getElementById('modalRating').textContent = `⭐ ${currentModalProduct.rating.toFixed(1)} (${currentModalProduct.review_count || 0} reviews)`;
+        document.getElementById('modalPrice').textContent = `₹${currentModalProduct.price.toLocaleString('en-IN')}`;
+        document.getElementById('modalOrigPrice').textContent = currentModalProduct.original_price ? `₹${currentModalProduct.original_price.toLocaleString('en-IN')}` : '';
+        document.getElementById('modalQtyVal').textContent = '1';
+        document.getElementById('modalStockStatus').textContent = currentModalProduct.stock > 0 ? `In Stock (${currentModalProduct.stock} available)` : 'Out of Stock';
+
+        document.getElementById('quickViewModal').style.display = 'flex';
+      } catch (err) {
+        Toast.error('Could not load product details');
+      }
+    }
+
+    document.getElementById('modalCloseBtn').onclick = () => {
+      document.getElementById('quickViewModal').style.display = 'none';
+    };
+
+    document.getElementById('quickViewModal').onclick = (e) => {
+      if (e.target.id === 'quickViewModal') {
+        document.getElementById('quickViewModal').style.display = 'none';
+      }
+    };
+
+    document.getElementById('modalQtyInc').onclick = () => {
+      if (currentModalProduct && modalQuantity < currentModalProduct.stock) {
+        modalQuantity++;
+        document.getElementById('modalQtyVal').textContent = modalQuantity;
+      }
+    };
+
+    document.getElementById('modalQtyDec').onclick = () => {
+      if (modalQuantity > 1) {
+        modalQuantity--;
+        document.getElementById('modalQtyVal').textContent = modalQuantity;
+      }
+    };
+
+    document.getElementById('modalAddToCartBtn').onclick = async () => {
+      if (currentModalProduct) {
+        await API.addToCart(currentModalProduct, modalQuantity);
+        Toast.success(`Added ${modalQuantity} x "${currentModalProduct.title}" to cart!`);
+        document.getElementById('quickViewModal').style.display = 'none';
+      }
+    };
+
+    // ---------------- SEARCH & SORT HANDLERS ----------------
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const sortSelect = document.getElementById('sortSelect');
+
+    searchBtn.addEventListener('click', () => {
+      currentSearch = searchInput.value.trim();
+      loadProducts();
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentSearch = searchInput.value.trim();
+        loadProducts();
+      }
+    });
+
+    sortSelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      loadProducts();
+    });
+
+    // Check for productId query param to open modal automatically
+    if (urlParams.get('productId')) {
+      setTimeout(() => {
+        openQuickView(urlParams.get('productId'));
+      }, 500);
+    }
+
+    // Initialize page
+    loadCategories();
+    loadProducts();
+  </script>
+</body>
+</html>
