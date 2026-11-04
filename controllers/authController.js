@@ -31,7 +31,7 @@ async function register(req, res) {
       });
     }
 
-    if (name.trim().length > 100 || password.length < PASSWORD_MIN_LENGTH || password.length > 72) {
+    if (name.trim().length > 100 || password.length < PASSWORD_MIN_LENGTH || Buffer.byteLength(password, 'utf8') > 72) {
       return res.status(400).json({
         success: false,
         message: 'Name must be at most 100 characters and password must be 8–72 characters long.'
@@ -145,7 +145,7 @@ async function updateProfile(req, res) {
 
     let passwordHash = user.password_hash;
     if (newPassword !== undefined && newPassword !== '') {
-      if (typeof newPassword !== 'string' || newPassword.length < PASSWORD_MIN_LENGTH || newPassword.length > 72) {
+      if (typeof newPassword !== 'string' || newPassword.length < PASSWORD_MIN_LENGTH || Buffer.byteLength(newPassword, 'utf8') > 72) {
         return res.status(400).json({ success: false, message: 'New password must be 8–72 characters long.' });
       }
       if (typeof currentPassword !== 'string' || !currentPassword) {
