@@ -1,68 +1,48 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../config/db');
+const { getJwtSecret } = require('../config/jwt');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'orderme_super_secret_jwt_key_2026_secure';
+function readUserFromToken(token) {
+  const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
+  if (!decoded || !Number.isInteger(decoded.id)) return null;
+  return db.prepare('SELECT id, name, email, role, phone, address, city, pincode FROM users WHERE id = ?').get(decoded.id) || null;
+}
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Access denied. No authentication token provided.'
-    });
+  if (typeof authHeader !== 'string' || !/^Bearer\s+\S+$/i.test(authHeader)) {
+    return res.status(401).json({ success: false, message: 'Access denied. No valid authentication token provided.' });
   }
 
-  const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, name, email, role, phone, address, city, pincode FROM users WHERE id = ?').get(decoded.id);
-
+    const user = readUserFromToken(authHeader.split(/\s+/)[1]);
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token. User no longer exists.'
-      });
+      return res.status(401).json({ success: false, message: 'Invalid token. User no longer exists.' });
     }
-
     req.user = user;
-    next();
+    return next();
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Token is invalid or expired. Please log in again.'
-    });
+    return res.status(401).json({ success: false, message: 'Token is invalid or expired. Please log in again.' });
   }
 }
 
 function optionalAuth(req, res, next) {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+  if (typeof authHeader === 'string' && /^Bearer\s+\S+$/i.test(authHeader)) {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const user = db.prepare('SELECT id, name, email, role, phone, address, city, pincode FROM users WHERE id = ?').get(decoded.id);
-      if (user) {
-        req.user = user;
-      }
-    } catch (e) {
-      // Ignore invalid token for optional auth
+      req.user = readUserFromToken(authHeader.split(/\s+/)[1]) || undefined;
+    } catch (error) {
+      // Public routes continue without an authenticated user.
     }
   }
-  next();
+  return next();
 }
 
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Forbidden. Admin privileges required.'
-    });
+    return res.status(403).json({ success: false, message: 'Forbidden. Admin privileges required.' });
   }
-  next();
+  return next();
 }
 
-module.exports = {
-  authenticate,
-  optionalAuth,
-  requireAdmin
-};
+module.exports = { authenticate, optionalAuth, requireAdmin };
